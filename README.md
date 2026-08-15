@@ -1,4 +1,3 @@
-# documentación del proyecto
 Activar mi entorno virtual con el comando .\venv\Scripts\Activate.ps1 en la terminal
 
 # ETL Rick and Morty
@@ -12,16 +11,18 @@ Practicar un pipeline ETL completo: extracción de datos desde una API REST,
 transformación con pandas/numpy, y carga a una base de datos PostgreSQL.
 
 ## Estructura del proyecto
+```
 etl-rick-and-morty/
 ├── src/
-│ ├── extract.py # Extracción de datos desde la API
-│ ├── json/ # Datos crudos cacheados en JSON
-│ ├── transform.py # (pendiente)
-│ └── load.py # (pendiente)
+│   ├── extract.py      # Extracción de datos desde la API
+│   ├── json/            # Datos crudos cacheados en JSON
+│   ├── transform.py     # (pendiente)
+│   └── load.py          # (pendiente)
 ├── requirements.txt
 ├── .gitignore
 ├── .env
 └── README.md
+```
 
 ## Progreso
 
@@ -48,8 +49,6 @@ Pendiente.
 ## Requisitos
 
 Ver `requirements.txt`. Entorno virtual recomendado (`venv`).
-
-## Cómo ejecutar
 
 ```bash
 python -m venv venv
