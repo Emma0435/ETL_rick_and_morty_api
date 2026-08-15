@@ -1,0 +1,1 @@
+# configuración (API keys, credenciales de BD, etc.)
