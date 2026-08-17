@@ -39,7 +39,7 @@ def crear_tabla_personajes():
     #eliminamos columnas que ya no son necesarias 
     #column_url y location_url solo fueron auxiliares para obtener el id
     # endregion
-    df = df.drop(columns=['location', 'origin', 'url', 'location_url', 'origin_url'])
+    df = df.drop(columns=['location', 'origin', 'url', 'location_url', 'origin_url', 'episode'])
     
     return df
 
@@ -54,6 +54,15 @@ def crear_tabla_ubicaciones():
     # obtenemos el mismo resultado, solo es otra sintaxis
     #endregion
     df.drop(columns=['residents', 'url'], inplace=True)
+        
+    return df
+
+def crear_tabla_episodios():
+    data = pd.read_json('src/json/episodios.json')
+    
+    df = pd.DataFrame(data)
+    
+    df.drop(columns=['characters', 'url'], inplace=True)
         
     return df
 
@@ -90,18 +99,39 @@ def crear_relacion_personaje_episodio():
         # endregion
     df = df.explode('episode')
     
-    print(df[df['episode'].isnull()])
-    
+    # region Explicación Linea
+    # Cuando hicimos el explode, los índices que coloca pandas sobre el dataframe 
+    # tambien se ven afectados, con esta función los reiniciamos y ya no hay repetidos
+    # El parametro drop, es porque por default la función crea una nueva columna para guardar
+    # los indices anteriores, entonces al darle false le decimos que no la conserve
+    # endregion
+    df.reset_index(inplace=True, drop=True)
+        
     df['episode_id'] = df['episode'].apply(lambda x: x.split('/')[-1])
     
     df['episode_id'] = pd.to_numeric(df['episode_id'], errors='coerce')
     
     df.drop(columns='episode', inplace=True)
-        
-    return df
     
+    return df
 
 if __name__ == "__main__":
-    # crear_tabla_personajes()
-    # crear_tabla_ubicaciones()
-    crear_relacion_personaje_episodio()
+    print('Personajes: ')
+    personajes = crear_tabla_personajes()
+    print(personajes)
+    print('____________________________________')
+    
+    print('Ubicaciones: ')
+    ubicaciones = crear_tabla_ubicaciones()
+    print(ubicaciones)
+    print('____________________________________')
+    
+    print('Episodios:')
+    episodios = crear_tabla_episodios()
+    print(episodios)
+    print('____________________________________')
+
+    print('Relacion personaje-episodio:')
+    relacionPE = crear_relacion_personaje_episodio()
+    print(relacionPE)
+    print('____________________________________')
