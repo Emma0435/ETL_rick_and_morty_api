@@ -115,23 +115,29 @@ def crear_relacion_personaje_episodio():
     
     return df
 
-if __name__ == "__main__":
-    print('Personajes: ')
-    personajes = crear_tabla_personajes()
-    print(personajes)
-    print('____________________________________')
+def validacion_integridad():
+    #validación de id's de los episodios
+    ids_episodio = crear_tabla_episodios()['id']
+    ids_relacion = crear_relacion_personaje_episodio()['episode_id']
     
-    print('Ubicaciones: ')
-    ubicaciones = crear_tabla_ubicaciones()
-    print(ubicaciones)
-    print('____________________________________')
+    resultado_episodio = set(ids_relacion) - set(ids_episodio)
     
-    print('Episodios:')
-    episodios = crear_tabla_episodios()
-    print(episodios)
-    print('____________________________________')
-
-    print('Relacion personaje-episodio:')
-    relacionPE = crear_relacion_personaje_episodio()
-    print(relacionPE)
-    print('____________________________________')
+    # validación de los id's de origen
+    id_origen_personaje = crear_tabla_personajes()['origin_id']
+    id_ubicacion_personaje = crear_tabla_personajes()['location_id']
+    id_ubicacion = crear_tabla_ubicaciones()['id']
+    
+    # Lógica: ¿hay algún personaje que apunte a un origen/ubicación que no existe?
+    resultado_origen = set(id_origen_personaje.dropna()) - set(id_ubicacion)
+    resultado_ubicacion = set(id_ubicacion_personaje.dropna()) - set(id_ubicacion)
+    
+    #retorno de valor: lista con posibles errores
+    error_list = []
+    if resultado_episodio != set():
+        error_list.append(f'Episodios: {resultado_episodio}')
+    if resultado_origen != set():
+        error_list.append(f'Origen: {resultado_origen}')
+    if resultado_ubicacion  != set():
+        error_list.append(f'Ubicacion: {resultado_ubicacion}')
+        
+    return error_list
