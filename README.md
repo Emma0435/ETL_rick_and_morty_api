@@ -16,7 +16,7 @@ etl-rick-and-morty/
 ├── src/
 │   ├── extract.py      # Extracción de datos desde la API
 │   ├── json/            # Datos crudos cacheados en JSON
-│   ├── transform.py     # (pendiente)
+│   ├── transform.py     # Transformación y validación de integridad
 │   └── load.py          # (pendiente)
 ├── requirements.txt
 ├── .gitignore
@@ -38,13 +38,25 @@ etl-rick-and-morty/
   - Episodios (`/episode`)
 - Los conteos obtenidos se validaron manualmente contra Postman.
 
-### ⏳ Transform
+### ✅ Transform
 
-Pendiente.
+- Funciones en `src/transform.py`, cada una devuelve un DataFrame listo para cargar:
+  - `crear_tabla_personajes()` — aplana `origin`/`location` (dict → `origin_id`/`location_id`), 
+    descarta la relación con episodios (se maneja aparte, ver tabla puente).
+  - `crear_tabla_ubicaciones()` — descarta `residents` y `url` (personajes es la fuente de verdad 
+    para las relaciones).
+  - `crear_tabla_episodios()` — descarta `characters` y `url` por el mismo motivo.
+  - `crear_relacion_personaje_episodio()` — tabla puente (`character_id`, `episode_id`) construida 
+    con `.explode()` sobre la lista de episodios de cada personaje, para modelar la relación 
+    muchos-a-muchos.
+- `validacion_integridad()` — valida, usando diferencia de sets, que no existan IDs "huérfanos" 
+  (relaciones que apunten a un registro inexistente) entre las 4 tablas. Si encuentra errores, 
+  detiene el proceso con una excepción detallando el problema exacto.
 
 ### ⏳ Load
 
-Pendiente.
+Pendiente. `load.py` importará las funciones de `transform.py` directamente (sin archivos 
+intermedios en disco) y cargará los DataFrames resultantes a PostgreSQL.
 
 ## Requisitos
 
