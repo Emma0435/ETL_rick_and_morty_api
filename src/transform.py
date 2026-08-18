@@ -1,11 +1,11 @@
 # funciones de limpieza y transformación
 import pandas as pd
 
-'''
-1 - convertir el json en tablas
-2 - la columna origen guarda diccionarios, tipo de dato no viable en bases de datos 
-3 - Guardar unicamente el ID del origen y la ubicación
-'''
+# region
+# 1 - convertir el json en tablas
+# 2 - la columna origen guarda diccionarios, tipo de dato no viable en bases de datos 
+# 3 - Guardar unicamente el ID del origen y la ubicación
+# endregion
 def crear_tabla_personajes():
     data = pd.read_json("src/json/personajes.json")
 
