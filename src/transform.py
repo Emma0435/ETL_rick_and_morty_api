@@ -115,29 +115,34 @@ def crear_relacion_personaje_episodio():
     
     return df
 
+def validacion(a, b):
+    resultado = set(a.dropna()) - set(b.dropna())
+    
+    return resultado
+
 def validacion_integridad():
-    #validación de id's de los episodios
-    ids_episodio = crear_tabla_episodios()['id']
-    ids_relacion = crear_relacion_personaje_episodio()['episode_id']
-    
-    resultado_episodio = set(ids_relacion) - set(ids_episodio)
-    
-    # validación de los id's de origen
-    id_origen_personaje = crear_tabla_personajes()['origin_id']
-    id_ubicacion_personaje = crear_tabla_personajes()['location_id']
-    id_ubicacion = crear_tabla_ubicaciones()['id']
-    
-    # Lógica: ¿hay algún personaje que apunte a un origen/ubicación que no existe?
-    resultado_origen = set(id_origen_personaje.dropna()) - set(id_ubicacion)
-    resultado_ubicacion = set(id_ubicacion_personaje.dropna()) - set(id_ubicacion)
-    
-    #retorno de valor: lista con posibles errores
-    error_list = []
-    if resultado_episodio != set():
-        error_list.append(f'Episodios: {resultado_episodio}')
-    if resultado_origen != set():
-        error_list.append(f'Origen: {resultado_origen}')
-    if resultado_ubicacion  != set():
-        error_list.append(f'Ubicacion: {resultado_ubicacion}')
+    personajes = crear_tabla_personajes()
+    ubicaciones = crear_tabla_ubicaciones()
+    episodios = crear_tabla_episodios()
+    relacion = crear_relacion_personaje_episodio()
         
-    return error_list
+    #Validar que los episodios en la relación no apunten a un episodio no existente
+    resultado_episodio = validacion(relacion['episode_id'], episodios['id'])
+        
+    #validar que los personajes no apunten a un origen/ubicación no existente
+    resultado_origen = validacion(personajes['origin_id'], ubicaciones['id'])
+    resultado_ubicacion = validacion(personajes['location_id'], ubicaciones['id'])
+    
+    #concatenación de errores
+    errores = []
+    if resultado_episodio != set():
+        errores.append(f'Episodios: {resultado_episodio}')
+    if resultado_origen != set():
+        errores.append(f'Origen: {resultado_origen}')
+    if resultado_ubicacion != set():
+        errores.append(f'Ubicación: {resultado_ubicacion}')
+    
+    if errores:
+        raise Exception(f'Existen huerfanos en los dataframes: {errores}')
+    
+    return errores
