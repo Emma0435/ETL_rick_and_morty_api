@@ -1,1 +1,1 @@
- # funciones de limpieza y transformación
+# funciones para conectarse y escribir en PostgreSQL
