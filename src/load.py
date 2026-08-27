@@ -85,24 +85,6 @@ from sqlalchemy.orm import Session
 # endregion
 def crear_tablas():
     Base.metadata.create_all(engine)
-      
-# def cargar_personajes(df_personajes):
-#     with Session(engine) as session:
-#         for _, fila in df_personajes.iterrows():
-#             personaje = Personaje(
-#                 id = fila['id'],
-#                 name = fila['name'],
-#                 status = fila['status'],
-#                 species = fila['species'],
-#                 type = fila['type'],
-#                 gender = fila['gender'],
-#                 image = fila['image'],
-#                 created = fila['created'],
-#                 origin_id = None if(pd.isna(fila['origin_id'])) else fila['origin_id'],
-#                 location_id = None if (pd.isna(fila['location_id'])) else fila['location_id']
-#             )
-#             session.add(personaje)
-#         session.commit()
 
 def cargar_relaciones(df_relacion):
     with Session(engine) as session:
@@ -166,7 +148,7 @@ def cargar_episodios(df_episodios):
         if df_filtrado.empty:
             print('No hay episodios nuevos que agregar')
         else:
-            for _, fila in df_filtrado.iterrow():
+            for _, fila in df_filtrado.iterrows():
                 episodio = Episodio(
                     id = fila['id'],
                     name = fila['name'],
@@ -193,13 +175,18 @@ def cargar_personajes(df_personajes):
                     id = fila['id'],
                     name = fila['name'],
                     status = fila['status'],
-                    species = fila['stuatus'],
+                    species = fila['species'],
                     type = fila['type'],
                     gender = fila['gender'],
                     image = fila['image'],
                     created = fila['created'],
-                    origin_id = fila['origin_id'],
-                    location_id = fila['location_id']
+                    
+                    # region Validación de Nulos
+                    # Hacemos una validación para saber si el campo es nulo o no
+                    # De lo contrario la inserción de un NaN en la BD falla, entonces lo convertimos a None
+                    # endregion
+                    origin_id = None if (pd.isna(fila['origin_id'])) else fila['origin_id'],
+                    location_id = None if (pd.isna(fila['location_id'])) else fila['location_id']
                 )
                 session.add(personaje)
             session.commit()
