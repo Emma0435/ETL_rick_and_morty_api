@@ -86,23 +86,23 @@ from sqlalchemy.orm import Session
 def crear_tablas():
     Base.metadata.create_all(engine)
       
-def cargar_personajes(df_personajes):
-    with Session(engine) as session:
-        for _, fila in df_personajes.iterrows():
-            personaje = Personaje(
-                id = fila['id'],
-                name = fila['name'],
-                status = fila['status'],
-                species = fila['species'],
-                type = fila['type'],
-                gender = fila['gender'],
-                image = fila['image'],
-                created = fila['created'],
-                origin_id = None if(pd.isna(fila['origin_id'])) else fila['origin_id'],
-                location_id = None if (pd.isna(fila['location_id'])) else fila['location_id']
-            )
-            session.add(personaje)
-        session.commit()
+# def cargar_personajes(df_personajes):
+#     with Session(engine) as session:
+#         for _, fila in df_personajes.iterrows():
+#             personaje = Personaje(
+#                 id = fila['id'],
+#                 name = fila['name'],
+#                 status = fila['status'],
+#                 species = fila['species'],
+#                 type = fila['type'],
+#                 gender = fila['gender'],
+#                 image = fila['image'],
+#                 created = fila['created'],
+#                 origin_id = None if(pd.isna(fila['origin_id'])) else fila['origin_id'],
+#                 location_id = None if (pd.isna(fila['location_id'])) else fila['location_id']
+#             )
+#             session.add(personaje)
+#         session.commit()
 
 def cargar_relaciones(df_relacion):
     with Session(engine) as session:
@@ -176,6 +176,34 @@ def cargar_episodios(df_episodios):
                 )
                 sesion.add(episodio)
             sesion.commit()
+
+def cargar_personajes(df_personajes):
+    with Session(engine) as session:
+        personajes_existentes = session.query(Personaje.id).all()
+        ids = [tupla[0] for tupla in personajes_existentes]
+        ids = set(ids)
+        
+        df_filtrado = df_personajes[~df_personajes['id'].isin(ids)]
+        
+        if df_filtrado.empty:
+            print('No hay personajes nuevos que agregar')
+        else:
+            for _, fila in df_filtrado.iterrows():
+                personaje = Personaje(
+                    id = fila['id'],
+                    name = fila['name'],
+                    status = fila['status'],
+                    species = fila['stuatus'],
+                    type = fila['type'],
+                    gender = fila['gender'],
+                    image = fila['image'],
+                    created = fila['created'],
+                    origin_id = fila['origin_id'],
+                    location_id = fila['location_id']
+                )
+                session.add(personaje)
+            session.commit()
+        
         
 if __name__ == '__main__':
     print('Creando tablas...')
@@ -196,9 +224,9 @@ if __name__ == '__main__':
     
     print('__________________________________________')
     
-    # print('Cargando personajes...')
-    # personajes = transform.crear_tabla_personajes()
-    # cargar_personajes(personajes)
+    print('Cargando personajes...')
+    personajes = transform.crear_tabla_personajes()
+    cargar_personajes(personajes)
     
     # print('Cargando relaciones...')
     # relaciones = transform.crear_relacion_personaje_episodio()
