@@ -85,20 +85,7 @@ from sqlalchemy.orm import Session
 # endregion
 def crear_tablas():
     Base.metadata.create_all(engine)
-        
-def cargar_episodios(df_episodios):
-    with Session(engine) as session:
-        for _, fila in df_episodios.iterrows():
-            episodio = Episodio(
-                id = fila['id'],
-                name = fila['name'],
-                air_date = fila['air_date'],
-                episodio = fila['episode'],
-                created = fila['created']
-            )
-            session.add(episodio)
-        session.commit()
-        
+      
 def cargar_personajes(df_personajes):
     with Session(engine) as session:
         for _, fila in df_personajes.iterrows():
@@ -136,10 +123,12 @@ def cargar_ubicaciones(df_ubicaciones):
         # endregion
         
         ids_existentes = session.query(Ubicacion.id).all() 
+        # region Compresión de listas
         # ids = []    
         # for tupla in ids_existentes:
         #     id = tupla[0]
-        #     ids.append(id)   
+        #     ids.append(id) 
+        # endregion  
         
         # esta línea es exactamente lo mismo que lo de arriba
         ids = [tupla[0] for tupla in ids_existentes]  
@@ -152,7 +141,7 @@ def cargar_ubicaciones(df_ubicaciones):
         df_filtrado = df_ubicaciones[~df_ubicaciones['id'].isin(ids)]
         
         if df_filtrado.empty:
-            print('No hay datos nuevos que agregar a la BD')
+            print('No hay ubicaciones nuevas que agregar a la BD')
         else:
             for _, fila in df_filtrado.iterrows():
                 ubicacion = Ubicacion(
@@ -164,7 +153,30 @@ def cargar_ubicaciones(df_ubicaciones):
                 )
                 session.add(ubicacion)
             session.commit()
-                    
+            
+def cargar_episodios(df_episodios):
+    with Session(engine) as sesion:
+        episodios_existentes = sesion.query(Episodio.id).all()
+        
+        ids = [tupla[0] for tupla in episodios_existentes]
+        ids = set(ids)
+        
+        df_filtrado = df_episodios[~df_episodios['id'].isin(ids)]
+        
+        if df_filtrado.empty:
+            print('No hay episodios nuevos que agregar')
+        else:
+            for _, fila in df_filtrado.iterrow():
+                episodio = Episodio(
+                    id = fila['id'],
+                    name = fila['name'],
+                    air_date = fila['air_date'],
+                    episodio = fila['episode'],
+                    created = fila['created']
+                )
+                sesion.add(episodio)
+            sesion.commit()
+        
 if __name__ == '__main__':
     print('Creando tablas...')
     crear_tablas()
@@ -176,9 +188,13 @@ if __name__ == '__main__':
     ubicaciones = transform.crear_tabla_ubicaciones()
     cargar_ubicaciones(ubicaciones)
     
-    # print('Cargando episodios...')
-    # episodios = transform.crear_tabla_episodios()
-    # cargar_episodios(episodios)
+    print('__________________________________________')
+    
+    print('Cargando episodios...')
+    episodios = transform.crear_tabla_episodios()
+    cargar_episodios(episodios)
+    
+    print('__________________________________________')
     
     # print('Cargando personajes...')
     # personajes = transform.crear_tabla_personajes()
