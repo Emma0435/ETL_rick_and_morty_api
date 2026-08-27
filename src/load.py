@@ -85,19 +85,6 @@ from sqlalchemy.orm import Session
 # endregion
 def crear_tablas():
     Base.metadata.create_all(engine)
-
-def cargar_ubicaciones(df_ubicaciones):
-    with Session(engine) as session:
-        for _, fila in df_ubicaciones.iterrows():
-            ubicacion = Ubicacion(
-                id = fila['id'],
-                name = fila['name'],
-                type = fila['type'],
-                dimension = fila['dimension'],
-                created = fila['created'],
-            )
-            session.add(ubicacion)
-        session.commit()
         
 def cargar_episodios(df_episodios):
     with Session(engine) as session:
@@ -139,16 +126,55 @@ def cargar_relaciones(df_relacion):
             )
             session.add(relacion)
         session.commit()
-
-        
-if __name__ == '__main__':
-    # print('Creando tablas...')
-    # crear_tablas()
-    # print('Tablas creadas o ya existentes en la BD')
     
-    # print('Cargando ubicaciones...')
-    # ubicaciones = transform.crear_tabla_ubicaciones()
-    # cargar_ubicaciones(ubicaciones)
+def cargar_ubicaciones(df_ubicaciones):
+    with Session(engine) as session:
+        # region Validacion
+        #Consultamos los id's existntes en la BD, usamos ayuda de la clase para realizar la 
+        # busqueda en la tabla
+        # Esto es para evitar insertar datos ya existentes y no truene el código
+        # endregion
+        
+        ids_existentes = session.query(Ubicacion.id).all() 
+        # ids = []    
+        # for tupla in ids_existentes:
+        #     id = tupla[0]
+        #     ids.append(id)   
+        
+        # esta línea es exactamente lo mismo que lo de arriba
+        ids = [tupla[0] for tupla in ids_existentes]  
+        ids = set(ids)
+                        
+        # region Explicacion corchetes
+        # asi como accedemos como df_ubicaciones['id'] para obtener la columna id,
+        # Estamos consultando los valores en negación
+        # endregion
+        df_filtrado = df_ubicaciones[~df_ubicaciones['id'].isin(ids)]
+        
+        if df_filtrado.empty:
+            print('No hay datos nuevos que agregar a la BD')
+        else:
+            for _, fila in df_filtrado.iterrows():
+                ubicacion = Ubicacion(
+                    id = fila['id'],
+                    name = fila['name'],
+                    type = fila['type'],
+                    dimension = fila['dimension'],
+                    created = fila['created']
+                )
+                session.add(ubicacion)
+            session.commit()
+                    
+if __name__ == '__main__':
+    print('Creando tablas...')
+    crear_tablas()
+    print('Tablas creadas o ya existentes en la BD')
+    
+    print('__________________________________________')
+    
+    print("Cargando ubicaciones...")
+    ubicaciones = transform.crear_tabla_ubicaciones()
+    cargar_ubicaciones(ubicaciones)
     
     # print('Cargando episodios...')
     # episodios = transform.crear_tabla_episodios()
@@ -163,8 +189,3 @@ if __name__ == '__main__':
     # cargar_relaciones(relaciones)
     # print('Proceso terminado')
     
-    relaciones = transform.crear_relacion_personaje_episodio()
-    # print(type(relaciones.iloc[0]['character_id']))
-    
-    ubicaciones = transform.crear_tabla_ubicaciones()
-    # print(type(ubicaciones.iloc[0]['id']))
