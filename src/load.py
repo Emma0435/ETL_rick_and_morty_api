@@ -92,7 +92,7 @@ def crear_tablas():
     tablas_faltantes = tablas_definidas - tablas_bd #comparación de las tablas existentes con las que queremos que existan
     
     if tablas_faltantes == set():
-        print('Tablas ya creadas')
+        print('Esquema de tablas completo')
     else:
         print(f'Creando las tablas {tablas_faltantes}')
         Base.metadata.create_all(engine)
