@@ -2,7 +2,7 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, DateTime, ForeignKey
 from datetime import datetime #este es de python, el de arriba es de SQL 
-import transform
+# import transform
 import pandas as pd
 
 #Creamos una base de las tablas en SQL 
@@ -224,8 +224,8 @@ def cargar_relaciones(df_relacion):
                 session.add(relacion)
             session.commit()       
                 
-if __name__ == '__main__':
-    crear_tablas()
+# if __name__ == '__main__':
+#     crear_tablas()
     
     # print('__________________________________________')
     
