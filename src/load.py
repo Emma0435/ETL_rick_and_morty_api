@@ -56,7 +56,7 @@ class Personaje(Base):
     origin_id: Mapped[int | None] = mapped_column(Integer, ForeignKey('ubicaciones.id'), nullable=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey('ubicaciones.id'), nullable=True)
     
-class relacion_personaje_episodio(Base):
+class Relacion_Personaje_Episodio(Base):
     __tablename__ = 'relacion_personaje_episodio'
     
     #region PK compuesta
@@ -74,6 +74,7 @@ class relacion_personaje_episodio(Base):
 #  Creación de las tablas con la conexión a la BD
 from config import engine
 from sqlalchemy.orm import Session
+from sqlalchemy import inspect
 
 #region Definición de función
 # Esta función es la encargada de crear las tablas en la BD
@@ -84,18 +85,18 @@ from sqlalchemy.orm import Session
 # metadata es todos los moldes juntos (todas nuestras clases de tablas definidas antes)
 # endregion
 def crear_tablas():
-    Base.metadata.create_all(engine)
-
-def cargar_relaciones(df_relacion):
-    with Session(engine) as session:
-        for _, fila in df_relacion.iterrows():
-            relacion = relacion_personaje_episodio(
-                personaje_id = int(fila['character_id']),
-                episodio_id = int(fila['episode_id'])
-            )
-            session.add(relacion)
-        session.commit()
+    inspector = inspect(engine)
     
+    tablas_bd = set(inspector.get_table_names()) #son las tablas existentes en la bd
+    tablas_definidas = set(Base.metadata.tables.keys()) #son las clases que creamos anteriormente
+    tablas_faltantes = tablas_definidas - tablas_bd #comparación de las tablas existentes con las que queremos que existan
+    
+    if tablas_faltantes == set():
+        print('Tablas ya creadas')
+    else:
+        print(f'Creando las tablas {tablas_faltantes}')
+        Base.metadata.create_all(engine)
+  
 def cargar_ubicaciones(df_ubicaciones):
     with Session(engine) as session:
         # region Validacion
@@ -116,9 +117,11 @@ def cargar_ubicaciones(df_ubicaciones):
         ids = [tupla[0] for tupla in ids_existentes]  
         ids = set(ids)
                         
-        # region Explicacion corchetes
+        # region Explicacion corchetes y ~
         # asi como accedemos como df_ubicaciones['id'] para obtener la columna id,
         # Estamos consultando los valores en negación
+        
+        # Es decir: df_ubicaciones en el campo donde no estan los ids proporcionados
         # endregion
         df_filtrado = df_ubicaciones[~df_ubicaciones['id'].isin(ids)]
         
@@ -190,30 +193,57 @@ def cargar_personajes(df_personajes):
                 )
                 session.add(personaje)
             session.commit()
+            
+def cargar_relaciones(df_relacion):
+    with Session(engine) as session:
+        relaciones_existentes = set(session.query(Relacion_Personaje_Episodio.personaje_id, Relacion_Personaje_Episodio.episodio_id).all())  
         
+        # region Zip
+        # en el df tenemos 2 columnas, character y episode id, pero para hacer la comparación, necesitamos todo junto
+        # con zip hacemos una concatenación de los 2 valores en una variable, en este caso una dupla
+        # y creamos una lista de tuplas creadas con las 2 columnas del df
+        # endregion  
+        relaciones_dataframe = list(zip(df_relacion['character_id'], df_relacion['episode_id']))  
         
+        # region Series
+        # Una Series es una sola columna con índice; un DataFrame es una colección de Series.
+        # Creamos una Series con las tuplas, usando el mismo índice de df_relacion para poder filtrar con ella.
+        # endregion
+        no_existe_en_db = ~pd.Series(relaciones_dataframe, index=df_relacion.index).isin(relaciones_existentes)
+        
+        df_filtrado = df_relacion[no_existe_en_db]  
+        
+        if df_filtrado.empty:
+            print('No hay una relación nueva que agregar') 
+        else:
+            for _, fila in df_filtrado.iterrows():
+                relacion = Relacion_Personaje_Episodio(
+                    personaje_id = fila['character_id'],
+                    episodio_id = fila['episode_id']
+                )
+                session.add(relacion)
+            session.commit()       
+                
 if __name__ == '__main__':
-    print('Creando tablas...')
     crear_tablas()
-    print('Tablas creadas o ya existentes en la BD')
     
-    print('__________________________________________')
+    # print('__________________________________________')
     
-    print("Cargando ubicaciones...")
-    ubicaciones = transform.crear_tabla_ubicaciones()
-    cargar_ubicaciones(ubicaciones)
+    # print("Cargando ubicaciones...")
+    # ubicaciones = transform.crear_tabla_ubicaciones()
+    # cargar_ubicaciones(ubicaciones)
     
-    print('__________________________________________')
+    # print('__________________________________________')
     
-    print('Cargando episodios...')
-    episodios = transform.crear_tabla_episodios()
-    cargar_episodios(episodios)
+    # print('Cargando episodios...')
+    # episodios = transform.crear_tabla_episodios()
+    # cargar_episodios(episodios)
     
-    print('__________________________________________')
+    # print('__________________________________________')
     
-    print('Cargando personajes...')
-    personajes = transform.crear_tabla_personajes()
-    cargar_personajes(personajes)
+    # print('Cargando personajes...')
+    # personajes = transform.crear_tabla_personajes()
+    # cargar_personajes(personajes)
     
     # print('Cargando relaciones...')
     # relaciones = transform.crear_relacion_personaje_episodio()
