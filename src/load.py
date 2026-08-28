@@ -2,7 +2,6 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, DateTime, ForeignKey
 from datetime import datetime #este es de python, el de arriba es de SQL 
-# import transform
 import pandas as pd
 
 #Creamos una base de las tablas en SQL 
@@ -72,7 +71,7 @@ class Relacion_Personaje_Episodio(Base):
 
  
 #  Creación de las tablas con la conexión a la BD
-from config import engine
+from .config import engine
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect
 
@@ -218,8 +217,8 @@ def cargar_relaciones(df_relacion):
         else:
             for _, fila in df_filtrado.iterrows():
                 relacion = Relacion_Personaje_Episodio(
-                    personaje_id = fila['character_id'],
-                    episodio_id = fila['episode_id']
+                    personaje_id = int(fila['character_id']),
+                    episodio_id = int(fila['episode_id'])
                 )
                 session.add(relacion)
             session.commit()       

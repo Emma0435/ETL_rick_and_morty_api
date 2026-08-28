@@ -1,7 +1,7 @@
 # orquesta todo: llama extract → transform → load en orden
 from src import extract as E
 from src import transform as T
-# from src import load as L
+from src import load as L
 
 if __name__ == "__main__":
     print('Comenzando etapa de Extracción...')
@@ -27,3 +27,12 @@ if __name__ == "__main__":
     
     print('Etapa de transformación completada')
     print(60*'=')
+    
+    print('Comenzando etapa de Carga (Load)...')
+    L.crear_tablas()
+    L.cargar_ubicaciones(ubicaciones)
+    L.cargar_episodios(episodios)
+    L.cargar_personajes(personajes)
+    L.cargar_relaciones(relacion_per_ep)
+    
+    print('Etapa de carga completada')
