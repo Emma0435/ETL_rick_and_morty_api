@@ -120,18 +120,13 @@ def validacion(a, b):
     
     return resultado
 
-def validacion_integridad():
-    personajes = crear_tabla_personajes()
-    ubicaciones = crear_tabla_ubicaciones()
-    episodios = crear_tabla_episodios()
-    relacion = crear_relacion_personaje_episodio()
-        
+def validacion_integridad(df_personajes, df_ubicaciones, df_episodios, df_relacion):
     #Validar que los episodios en la relación no apunten a un episodio no existente
-    resultado_episodio = validacion(relacion['episode_id'], episodios['id'])
+    resultado_episodio = validacion(df_relacion['episode_id'], df_episodios['id'])
         
     #validar que los personajes no apunten a un origen/ubicación no existente
-    resultado_origen = validacion(personajes['origin_id'], ubicaciones['id'])
-    resultado_ubicacion = validacion(personajes['location_id'], ubicaciones['id'])
+    resultado_origen = validacion(df_personajes['origin_id'], df_ubicaciones['id'])
+    resultado_ubicacion = validacion(df_personajes['location_id'], df_ubicaciones['id'])
     
     #concatenación de errores
     errores = []
@@ -144,5 +139,5 @@ def validacion_integridad():
     
     if errores:
         raise Exception(f'Existen huerfanos en los dataframes: {errores}')
-    
-    return errores
+    else:
+        print('Validación de integridad completada sin errores')
