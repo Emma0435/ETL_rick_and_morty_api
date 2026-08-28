@@ -91,6 +91,16 @@ Durante la carga surgieron dos incompatibilidades entre pandas/numpy y PostgreSQ
 
 La conexión a PostgreSQL se define en `config.py` mediante SQLAlchemy `create_engine`, usando un archivo de configuración local (excluido de control de versiones). Ver `config.example.py` para la plantilla de configuración necesaria.
 
+### ✅ Main (orquestación)
+
+`main.py`, en la raíz del proyecto, es el punto de entrada único que ejecuta el pipeline completo en orden:
+
+1. **Extract** — descarga y cachea en JSON los 3 recursos de la API (personajes, ubicaciones, episodios).
+2. **Transform** — construye los 4 DataFrames y corre `validacion_integridad()` sobre ellos antes de continuar.
+3. **Load** — crea las tablas (si no existen) y carga las 4, en el orden de dependencias.
+
+Al vivir `main.py` en la raíz (fuera de `src/`), los módulos internos de `src/` (`extract`, `transform`, `load`, `config`) se importan entre sí como paquete, usando imports relativos (`from . import transform`, `from .config import engine`) y un `src/__init__.py`.
+
 ## Requisitos
 
 Ver `requirements.txt`. Entorno virtual recomendado (`venv`).
