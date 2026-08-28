@@ -51,9 +51,7 @@ etl-rick-and-morty/
   (relaciones que apunten a un registro inexistente) entre las 4 tablas. Si encuentra errores, 
   detiene el proceso con una excepción detallando el problema exacto.
 
-### ⏳ Load
-
-## Load
+### ✅ Load
 
 El módulo `load.py` es responsable de tomar los DataFrames generados por `transform.py` y cargarlos a una base de datos PostgreSQL, usando **SQLAlchemy** (ORM, sintaxis declarativa 2.0) como capa de conexión y mapeo.
 
