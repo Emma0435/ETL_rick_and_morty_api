@@ -1,3 +1,11 @@
+-- Bloque 1 — Fundamentos de consulta (SELECT)
+-- SELECT, FROM, alias de columnas y tablas
+-- WHERE y operadores de comparación
+-- ORDER BY, LIMIT/OFFSET
+-- DISTINCT
+-- Operadores lógicos: AND, OR, NOT, IN, BETWEEN, LIKE/ILIKE
+
+
 -- TEORIA
 -- Seleccionar todo de personajes
 SELECT * FROM personajes;
